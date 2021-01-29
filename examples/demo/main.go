@@ -17,8 +17,8 @@ func main() {
 	flow.TransactionFromFile("setup_user").SignProposeAndPayAs("user1").Run()
 	flow.TransactionFromFile("setup_user").SignProposeAndPayAs("user2").Run()
 
-	flow.TransactionFromFile("setup_account").SignProposeAndPayAs("user1").AccountArgument("user2").RunPrintEventsFull()
+	flow.TransactionFromFile("setup_wallet").SignProposeAndPayAs("user1").AccountArgument("user2").RunPrintEventsFull()
 	flow.TransactionFromFile("deposit").SignProposeAndPayAs("user1").UFix64Argument("10.0").RunPrintEventsFull()
-	flow.TransactionFromFile("withdraw").SignProposeAndPayAs("user1").UFix64Argument("10.0").RunPrintEventsFull()
+	flow.TransactionFromFile("distribute").SignProposeAndPayAs("user1").UFix64Argument("10.0").RunPrintEventsFull()
 
 }

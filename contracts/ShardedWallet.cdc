@@ -1,16 +1,12 @@
-// DemoToken is a fungible token used for testing marketplace purchases
+// SharedWallet is a contract that enables a wallet that will wrap a FungibleToken.Vault and distribute ft according to the provieded fractions
 
-// This has been left really really simple since we expect the Flow token will replace this.
-
-// Import the Flow FungibleToken interface
 import FungibleToken from 0xee82856bf20e2aa6
-import DemoToken from 0x01cf0e2f2f715450
 
 pub contract ShardedWallet {
 
     // Event that is emitted when tokens are withdrawn from a Vault
-    pub event TokensWithdrawn(amount: UFix64, from: Address?)
-    pub event TokensShared(amount: UFix64, from: Address?,  to:Address?)
+    pub event TokensDistributedTotal(amount: UFix64, from: Address?)
+    pub event TokensDistributed(amount: UFix64, from: Address?,  to:Address?, toName: String)
 
     // Event that is emitted when tokens are deposited to a Vault
     pub event TokensDeposited(amount: UFix64, to: Address?)
@@ -26,74 +22,65 @@ pub contract ShardedWallet {
         }
     }
 
-    // Vault
+    // Wallet
     //
-    // Each user stores an instance of only the Vault in their storage
-    // The functions in the Vault and governed by the pre and post conditions
-    // in FungibleToken when they are called.
-    // The checks happen at runtime whenever a function is called.
-    //
-    // Resources can only be created in the context of the contract that they
-    // are defined in, so there is no way for a malicious user to create Vaults
-    // out of thin air. A special Minter resource needs to be defined to mint
-    // new tokens.
-    //
-    pub resource Vault:FungibleToken.Receiver{
+    // A shared wallet wrapping another FungibleToken.Vault
+    // When distributing money from the wallet it is distributed given the fractions for the members
+    pub resource Wallet:FungibleToken.Receiver{
 
-        // holds the balance of a users tokens
-        pub var balance: UFix64
 
-        pub var members: { Address: ShardedMember}
-        // initialize the balance at resource creation time
-        init(balance: UFix64, members: {Address: ShardedMember}) {
-            self.balance = balance
+        pub var vault: @FungibleToken.Vault
+        pub var members: { String: ShardedMember}
+
+        //initalize the Wallet with a wrapped vault and members
+        init(vault: @FungibleToken.Vault, members: {String: ShardedMember}) {
+            self.vault <- vault
             self.members=members
         }
 
-        // withdraw
+        // distribute
         //
-        // Function that takes an integer amount as an argument
-        // and withdraws that amount from the Vault.
-        // It creates a new temporary Vault that is used to hold
-        // the money that is being transferred. It returns the newly
-        // created Vault to the context that called so it can be deposited
-        // elsewhere.
+        // Distribute the given amount according to the fractions of the members
         //
-        pub fun withdraw(amount: UFix64) {
-            self.balance = self.balance - amount
+        pub fun distribute(_ amount: UFix64) {
+            pre {
+                self.vault.balance >= amount : "Not enough balance to distribute that amount"
+            }
+
             for member in self.members.keys {
               let shardedMember= self.members[member]!
               let shardedAmount= amount* shardedMember.fraction
               let receiver =shardedMember.receiver.borrow()!
-              receiver.deposit(from: <- DemoToken.createVaultWithTokens(shardedAmount))
-              emit TokensShared(amount:shardedAmount, from:self.owner?.address, to:receiver.owner?.address)
+              receiver.deposit(from: <- self.vault.withdraw(amount: shardedAmount))
+              emit TokensDistributed(amount:shardedAmount, from:self.owner?.address, to:receiver.owner?.address, toName: member)
             } 
-            emit TokensWithdrawn(amount: amount, from: self.owner?.address)
+            emit TokensDistributedTotal(amount: amount, from: self.owner?.address)
+        }
+
+
+        pub fun distributeAll() {
+            self.distribute(self.vault.balance)
         }
 
         // deposit
         //
-        // Function that takes a Vault object as an argument and adds
-        // its balance to the balance of the owners Vault.
-        // It is allowed to destroy the sent Vault because the Vault
-        // was a temporary holder of the tokens. The Vault's balance has
-        // been consumed and therefore can be destroyed.
-        pub fun deposit(from: @FungibleToken.Vault) {
-            self.balance = self.balance + from.balance
-            emit TokensDeposited(amount: from.balance, to: self.owner?.address)
-            destroy from
+        // delegate the deposit to the wrapped vault 
+         pub fun deposit(from: @FungibleToken.Vault) {
+            self.vault.deposit(from: <- from)
         }
 
+        destroy() {
+            self.distributeAll()
+            destroy self.vault
+        }
     }
 
-    // createEmptyVault
+    // createWallet
     //
-    // Function that creates a new Vault with a balance of zero
-    // and returns it to the calling context. A user must call this function
-    // and store the returned Vault in their storage in order to allow their
-    // account to be able to receive deposits of this token type.
+    // Function that creates a sharded wallet wrapping a given vault and with members with a given fraction.
+    // The string key of the members array are for inrmation purposes only
     //
-    pub fun createEmptyVault(members: {Address:ShardedMember}): @ShardedWallet.Vault {
+    pub fun createWallet(vault: @FungibleToken.Vault, members: {String:ShardedMember}): @ShardedWallet.Wallet {
         var total:UFix64=0.0
         for member in members.keys {
             let shardedMember= members[member]!
@@ -102,7 +89,7 @@ pub contract ShardedWallet {
         if total !=1.0 {
             panic("Cannot create vault without fully distributing the rewards")
         }
-        return <-create Vault(balance: 0.0, members: members)
+        return <-create Wallet(vault: <- vault, members: members)
     }
 
 }

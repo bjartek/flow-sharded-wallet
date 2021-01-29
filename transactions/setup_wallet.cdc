@@ -3,7 +3,7 @@
 // so that they can use the exampleToken
 
 import FungibleToken from 0xee82856bf20e2aa6
-import ShardedWallet from 0x01cf0e2f2f715450
+import ShardedWallet, DemoToken from 0x01cf0e2f2f715450
 
 transaction(memberAddress: Address) {
 
@@ -12,7 +12,7 @@ transaction(memberAddress: Address) {
         let member = getAccount(memberAddress)
 
         // Return early if the account already stores a ExampleToken Vault
-        if signer.borrow<&ShardedWallet.Vault>(from: /storage/ShardedWalletTokenVault) != nil {
+        if signer.borrow<&ShardedWallet.Wallet>(from: /storage/ShardedWallet) != nil {
             return
         }
 
@@ -20,22 +20,21 @@ transaction(memberAddress: Address) {
         let memberRef = member.getCapability<&{FungibleToken.Receiver}>(/public/DemoTokenReceiver)
 
         let members= { 
-            signer.address: ShardedWallet.ShardedMember(receiver:signerRef, fraction: UFix64(0.5)), 
-            member.address: ShardedWallet.ShardedMember(receiver: memberRef, fraction: UFix64(0.5))
-           
+            "user1": ShardedWallet.ShardedMember(receiver:signerRef, fraction: UFix64(0.5)), 
+            "user2": ShardedWallet.ShardedMember(receiver: memberRef, fraction: UFix64(0.5))
         }
         //Create a sharded wallet split 50/50, only 
         // Create a new ShardedWallet Vault and put it in storage
         signer.save(
-            <-ShardedWallet.createEmptyVault(members: members),
-            to: /storage/ShardedWalletTokenVault
+            <-ShardedWallet.createWallet(vault: <- DemoToken.createEmptyVault(), members: members),
+            to: /storage/ShardedWallet
         )
 
         // Create a public capability to the Vault that only exposes
         // the deposit function through the Receiver interface
-        signer.link<&ShardedWallet.Vault{FungibleToken.Receiver}>(
+        signer.link<&ShardedWallet.Wallet{FungibleToken.Receiver}>(
             /public/ShardedWalletReceiver,
-            target: /storage/ShardedWalletTokenVault
+            target: /storage/ShardedWallet
         )
 
     }
