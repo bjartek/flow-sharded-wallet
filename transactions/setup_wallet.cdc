@@ -17,8 +17,14 @@ transaction(memberAddress: Address) {
         }
 
         let signerRef = signer.getCapability<&{FungibleToken.Receiver}>(/public/DemoTokenReceiver)
+        if !signerRef.check() {
+            panic("Needs a valid FungibleToken.Receiver linked")
+        }
         let memberRef = member.getCapability<&{FungibleToken.Receiver}>(/public/DemoTokenReceiver)
-
+        if !memberRef.check() {
+            panic("Needs a valid FungibleToken.Receiver linked")
+        }
+       
         let members= { 
             "user1": ShardedWallet.ShardedMember(receiver:signerRef, fraction: UFix64(0.5)), 
             "user2": ShardedWallet.ShardedMember(receiver: memberRef, fraction: UFix64(0.5))
