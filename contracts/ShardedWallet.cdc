@@ -22,20 +22,48 @@ pub contract ShardedWallet {
         }
     }
 
+    pub resource interface WalletOwner {
+
+        pub fun getMembers() : {String: ShardedMember}  
+        pub fun setMembers(_ members: {String: ShardedMember})
+        pub fun distribute(_ amount: UFix64) 
+        pub fun distributeAll() 
+    }
+
     // Wallet
     //
     // A shared wallet wrapping another FungibleToken.Vault
     // When distributing money from the wallet it is distributed given the fractions for the members
-    pub resource Wallet:FungibleToken.Receiver{
+    pub resource Wallet:FungibleToken.Receiver, WalletOwner{
 
 
-        pub var vault: @FungibleToken.Vault
-        pub var members: { String: ShardedMember}
+        access(self) var vault: @FungibleToken.Vault
+        access(self) var members: { String: ShardedMember}
 
         //initalize the Wallet with a wrapped vault and members
         init(vault: @FungibleToken.Vault, members: {String: ShardedMember}) {
             self.vault <- vault
             self.members=members
+        }
+
+        pub fun getMembers() : {String: ShardedMember} {
+            return self.members
+        }
+
+        pub fun setMembers(_ members: {String: ShardedMember} ) {
+            ShardedWallet.assertFractions(members)
+            self.members=members
+        }
+
+        //does this make sense?
+        pub fun createWalletOwner(_ account: AuthAccount): &{WalletOwner}? {
+
+            for member in self.members.values {
+                if member.receiver.borrow()!.owner?.address == account.address {
+                    return &self as &{WalletOwner}
+                }
+            }
+            return nil
         }
 
         // distribute
@@ -75,13 +103,8 @@ pub contract ShardedWallet {
         }
     }
 
-    // createWallet
-    //
-    // Function that creates a sharded wallet wrapping a given vault and with members with a given fraction.
-    // The string key of the members array are for inrmation purposes only
-    //
-    pub fun createWallet(vault: @FungibleToken.Vault, members: {String:ShardedMember}): @ShardedWallet.Wallet {
-        var total:UFix64=0.0
+    pub fun assertFractions(_ members: {String:ShardedMember}) {
+         var total:UFix64=0.0
         for member in members.keys {
             let shardedMember= members[member]!
             total = total+shardedMember.fraction
@@ -89,6 +112,14 @@ pub contract ShardedWallet {
         if total !=1.0 {
             panic("Cannot create vault without fully distributing the rewards")
         }
+    }
+    // createWallet
+    //
+    // Function that creates a sharded wallet wrapping a given vault and with members with a given fraction.
+    // The string key of the members array are for inrmation purposes only
+    //
+    pub fun createWallet(vault: @FungibleToken.Vault,members: {String:ShardedMember}): @ShardedWallet.Wallet {
+        self.assertFractions(members)
         return <-create Wallet(vault: <- vault, members: members)
     }
 

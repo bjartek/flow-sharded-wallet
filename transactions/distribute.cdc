@@ -11,6 +11,7 @@ transaction(amount: UFix64) {
     }
 
     execute {
+        self.sharded.member
         self.shardedVault.distribute(amount)
     }
 }
