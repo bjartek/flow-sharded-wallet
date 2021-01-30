@@ -38,8 +38,8 @@ transaction(memberAddress: Address) {
         //TODO if a member has not created this client it should be ok? 
         let signerClient= signer.getCapability<&{ShardedWallet.ClientPublic}>(/public/ShardedWalletClient)
         let memberClient= member.getCapability<&{ShardedWallet.ClientPublic}>(/public/ShardedWalletClient)
-        signerClient.borrow()!.addCapability(cap: walletCapability)
-        memberClient.borrow()!.addCapability(cap: walletCapability)
+        signerClient.borrow()!.addServer(cap: walletCapability)
+        memberClient.borrow()!.addServer(cap: walletCapability)
 
 
         // Create a public capability to the Vault that only exposes
