@@ -12,27 +12,14 @@ transaction(memberAddress: Address) {
 
         let member = getAccount(memberAddress)
 
-        // Return early if the account already stores a ExampleToken Vault
-        if signer.borrow<&ShardedWallet.Wallet>(from: /storage/ShardedWallet) != nil {
-            return
-        }
-
-        
-        let signerRef = signer.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
-        if !signerRef.check() {
-            panic("Needs a valid FungibleToken.Receiver linked")
-        }
-        let memberRef = member.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
-        if !memberRef.check() {
-            panic("Needs a valid FungibleToken.Receiver linked")
-        }
-
-
-       
        //send in the wallet client
         let members = { 
-            "user1": ShardedWallet.ShardedMember(receiver:signerRef, fraction: UFix64(0.5)), 
-            "user2": ShardedWallet.ShardedMember(receiver: memberRef, fraction: UFix64(0.5))
+            "user1": ShardedWallet.ShardedMember(
+                receiver:signer.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver), 
+                fraction: 0.5), 
+            "user2": ShardedWallet.ShardedMember(
+                receiver: member.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver), 
+                fraction: 0.5)
         }
         //Create a sharded wallet split 50/50, only 
         // Create a new ShardedWallet Vault and put it in storage

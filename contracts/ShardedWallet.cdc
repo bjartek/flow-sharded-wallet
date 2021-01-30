@@ -46,7 +46,7 @@ pub contract ShardedWallet {
         }
 
         pub fun setMembers(_ members: {String: ShardedMember} ) {
-            ShardedWallet.assertFractions(members)
+            ShardedWallet.assertMembers(members)
             self.members=members
         }
 
@@ -87,10 +87,13 @@ pub contract ShardedWallet {
         }
     }
 
-    pub fun assertFractions(_ members: {String:ShardedMember}) {
+    pub fun assertMembers(_ members: {String:ShardedMember}) {
          var total:UFix64=0.0
         for member in members.keys {
             let shardedMember= members[member]!
+            if !shardedMember.receiver.check()  {
+                panic("Receiver needs to exist for member ".concat(member))
+            }
             total = total+shardedMember.fraction
         }
         if total !=1.0 {
@@ -103,7 +106,7 @@ pub contract ShardedWallet {
     // The string key of the members array are for inrmation purposes only
     //
     pub fun createWallet(vault: @FungibleToken.Vault,members: {String:ShardedMember}): @ShardedWallet.Wallet {
-        self.assertFractions(members)
+        self.assertMembers(members)
         return <-create Wallet(vault: <- vault, members: members)
     }
 
@@ -123,7 +126,7 @@ pub contract ShardedWallet {
 
         pub fun addCapability(cap: Capability<&Wallet>) {
             pre {
-                cap.borrow() != nil: "Invalid token admin collection capability"
+                cap.check() : "Invalid wallet capablity"
             }
             self.addAccountCapability = cap
         }
