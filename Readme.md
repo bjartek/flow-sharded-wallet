@@ -2,8 +2,7 @@
 
 An example of how to make a ShardedWallet, 
 
-For now only the creator of the wallet can withdraw tokens, but when he does the tokens are distributed to the registered owners
-
+Any member of the ShardedWallet can distribute tokens through the ShardedWalletClient in their storage. 
 ## How to test
 
 `make emulator` in one terminal
