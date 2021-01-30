@@ -3,7 +3,8 @@
 // so that they can use the exampleToken
 
 import FungibleToken from 0xee82856bf20e2aa6
-import ShardedWallet, DemoToken from 0x01cf0e2f2f715450
+import ShardedWallet from 0x01cf0e2f2f715450
+import FlowToken from 0x0ae53cb6e3f42a79
 
 transaction(memberAddress: Address) {
 
@@ -16,11 +17,12 @@ transaction(memberAddress: Address) {
             return
         }
 
-        let signerRef = signer.getCapability<&{FungibleToken.Receiver}>(/public/DemoTokenReceiver)
+        
+        let signerRef = signer.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
         if !signerRef.check() {
             panic("Needs a valid FungibleToken.Receiver linked")
         }
-        let memberRef = member.getCapability<&{FungibleToken.Receiver}>(/public/DemoTokenReceiver)
+        let memberRef = member.getCapability<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
         if !memberRef.check() {
             panic("Needs a valid FungibleToken.Receiver linked")
         }
@@ -35,7 +37,7 @@ transaction(memberAddress: Address) {
         //Create a sharded wallet split 50/50, only 
         // Create a new ShardedWallet Vault and put it in storage
         signer.save(
-            <-ShardedWallet.createWallet(vault: <- DemoToken.createEmptyVault(), members: members),
+            <-ShardedWallet.createWallet(vault: <- FlowToken.createEmptyVault(), members: members),
             to: /storage/ShardedWallet
         )
 
