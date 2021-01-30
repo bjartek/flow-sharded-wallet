@@ -24,7 +24,10 @@ transaction(memberAddress: Address) {
         if !memberRef.check() {
             panic("Needs a valid FungibleToken.Receiver linked")
         }
+
+
        
+       //send in the wallet client
         let members = { 
             "user1": ShardedWallet.ShardedMember(receiver:signerRef, fraction: UFix64(0.5)), 
             "user2": ShardedWallet.ShardedMember(receiver: memberRef, fraction: UFix64(0.5))
@@ -35,6 +38,20 @@ transaction(memberAddress: Address) {
             <-ShardedWallet.createWallet(vault: <- DemoToken.createEmptyVault(), members: members),
             to: /storage/ShardedWallet
         )
+
+        signer.link<&ShardedWallet.Wallet>(/private/SharedWallet, target:/storage/ShardedWallet)
+
+
+        //note that this capability is in _private_ not in public. This is what makes this safe
+        let walletCapability = signer.getCapability<&ShardedWallet.Wallet>(/private/SharedWallet)
+
+        //TODO should this be done in the contract or in the transaction?
+        //TODO if a member has not created this client it should be ok? 
+        let signerClient= signer.getCapability<&{ShardedWallet.ClientPublic}>(/public/ShardedWalletClient)
+        let memberClient= member.getCapability<&{ShardedWallet.ClientPublic}>(/public/ShardedWalletClient)
+        signerClient.borrow()!.addCapability(cap: walletCapability)
+        memberClient.borrow()!.addCapability(cap: walletCapability)
+
 
         // Create a public capability to the Vault that only exposes
         // the deposit function through the Receiver interface

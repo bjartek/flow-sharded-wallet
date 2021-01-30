@@ -22,19 +22,14 @@ pub contract ShardedWallet {
         }
     }
 
-    pub resource interface WalletOwner {
+  
 
-        pub fun getMembers() : {String: ShardedMember}  
-        pub fun setMembers(_ members: {String: ShardedMember})
-        pub fun distribute(_ amount: UFix64) 
-        pub fun distributeAll() 
-    }
 
     // Wallet
     //
     // A shared wallet wrapping another FungibleToken.Vault
     // When distributing money from the wallet it is distributed given the fractions for the members
-    pub resource Wallet:FungibleToken.Receiver, WalletOwner{
+    pub resource Wallet:FungibleToken.Receiver{
 
 
         access(self) var vault: @FungibleToken.Vault
@@ -53,17 +48,6 @@ pub contract ShardedWallet {
         pub fun setMembers(_ members: {String: ShardedMember} ) {
             ShardedWallet.assertFractions(members)
             self.members=members
-        }
-
-        //does this make sense?
-        pub fun createWalletOwner(_ account: AuthAccount): &{WalletOwner}? {
-
-            for member in self.members.values {
-                if member.receiver.borrow()!.owner?.address == account.address {
-                    return &self as &{WalletOwner}
-                }
-            }
-            return nil
         }
 
         // distribute
@@ -123,6 +107,49 @@ pub contract ShardedWallet {
         return <-create Wallet(vault: <- vault, members: members)
     }
 
+  // implementing https://docs.onflow.org/cadence/design-patterns#capability-receiver
+  // this allows other accounts to call the methods in the Client
+  pub resource interface ClientPublic {
+        pub fun addCapability(cap: Capability<&Wallet>) 
+    }
+
+    pub resource Client:ClientPublic {
+
+        access(self) var addAccountCapability: Capability<&Wallet>?
+
+        init() {
+            self.addAccountCapability = nil
+        }
+
+        pub fun addCapability(cap: Capability<&Wallet>) {
+            pre {
+                cap.borrow() != nil: "Invalid token admin collection capability"
+            }
+            self.addAccountCapability = cap
+        }
+
+        pub fun distributeAll() {
+            pre {
+                self.addAccountCapability != nil: 
+                    "Cannot distribute until registration is complete"
+            }
+            let walletRef = self.addAccountCapability!.borrow()!
+            walletRef.distributeAll()
+        }
+
+        pub fun distribute(_ amount: UFix64) {
+           pre {
+                self.addAccountCapability != nil: 
+                    "Cannot distribute until registration is complete"
+            }
+            let walletRef = self.addAccountCapability!.borrow()!
+            walletRef.distribute(amount)
+        }
+    }
+
+    pub fun createClient(): @ShardedWallet.Client {
+        return <- create Client()
+    }
 }
    
 
