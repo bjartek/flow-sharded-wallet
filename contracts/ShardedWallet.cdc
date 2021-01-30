@@ -111,7 +111,7 @@ pub contract ShardedWallet {
     }
 
   // implementing https://docs.onflow.org/cadence/design-patterns#capability-receiver
-  // this allows other accounts to call the methods in the Client
+  // this allows other accounts create a client that the owner of the ShardedWallet will add a server to
   pub resource interface ClientPublic {
         pub fun addServer(cap: Capability<&Wallet>) 
     }
@@ -126,7 +126,7 @@ pub contract ShardedWallet {
 
         pub fun addServer(cap: Capability<&Wallet>) {
             pre {
-                cap.check() : "Invalid wallet capablity"
+                cap.check() : "Invalid server capablity"
             }
             self.server = cap
         }
@@ -134,7 +134,7 @@ pub contract ShardedWallet {
         pub fun distributeAll() {
             pre {
                 self.server != nil: 
-                    "Cannot distribute until registration is complete"
+                    "Cannot distribute until server registration is complete"
             }
             let walletRef = self.server!.borrow()!
             walletRef.distributeAll()
@@ -143,7 +143,7 @@ pub contract ShardedWallet {
         pub fun distribute(_ amount: UFix64) {
            pre {
                 self.server != nil: 
-                    "Cannot distribute until registration is complete"
+                    "Cannot distribute until server registration is complete"
             }
             let walletRef = self.server!.borrow()!
             walletRef.distribute(amount)
