@@ -1,8 +1,8 @@
 # Sharded Wallet
+An Sharded Wallet is a wallet where the owher registers users that will receive their fraction of the balance.
 
-An example of how to make a ShardedWallet, 
-
-Any member of the ShardedWallet can distribute tokens through the ShardedWalletClient in their storage. 
+The owner can also register a set of users that is allowed to call the distribute and distributeAll methods. 
+ 
 ## How to test
 
 `make emulator` in one terminal
