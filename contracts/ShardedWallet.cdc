@@ -1,6 +1,6 @@
 // SharedWallet is a contract that enables a wallet that will wrap a FungibleToken.Vault and distribute ft according to the provieded fractions
 
-import FungibleToken from 0xee82856bf20e2aa6
+import FungibleToken from "./standard/FungibleToken.cdc"
 
 pub contract ShardedWallet {
 
@@ -157,3 +157,4 @@ pub contract ShardedWallet {
    
 
    
+ 

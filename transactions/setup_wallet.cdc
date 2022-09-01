@@ -2,9 +2,9 @@
 // to add a Vault resource to their account
 // so that they can use the exampleToken
 
-import FungibleToken from 0xee82856bf20e2aa6
-import ShardedWallet from 0x01cf0e2f2f715450
-import FlowToken from 0x0ae53cb6e3f42a79
+import FungibleToken from "../contracts/standard/FungibleToken.cdc"
+import ShardedWallet from "../contracts/ShardedWallet.cdc"
+import FlowToken from "../contracts/standard/FlowToken.cdc"
 
 transaction(memberAddress: Address) {
 

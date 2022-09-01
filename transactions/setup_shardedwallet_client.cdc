@@ -2,7 +2,7 @@
 // to add a Vault resource to their account
 // so that they can use the exampleToken
 
-import ShardedWallet from 0x01cf0e2f2f715450
+import ShardedWallet from "../contracts/ShardedWallet.cdc"
 
 transaction {
 
