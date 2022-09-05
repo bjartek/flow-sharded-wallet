@@ -2,7 +2,7 @@
 import FungibleToken from "../contracts/standard/FungibleToken.cdc"
 import ShardedWallet from "../contracts/ShardedWallet.cdc"
 
-transaction(type: String, amount: UFix64) {
+transaction() {
 
     let shardedVault: &ShardedWallet.Wallet
 
@@ -11,6 +11,6 @@ transaction(type: String, amount: UFix64) {
     }
 
     execute {
-        self.shardedVault.distribute(type: CompositeType(type)!, amount: amount)
+        self.shardedVault.distributeAll()
     }
 }
