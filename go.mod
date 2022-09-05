@@ -2,7 +2,11 @@ module github.com/bjartek/flow-sharded-wallet
 
 go 1.19
 
-require github.com/bjartek/overflow v1.0.0-rc9992
+require (
+	github.com/bjartek/overflow v1.0.0-rc9992
+	github.com/hexops/autogold v1.3.0
+	github.com/stretchr/testify v1.8.0
+)
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
@@ -41,7 +45,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hexops/autogold v1.3.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/hexops/valast v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -102,7 +105,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.12.0 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
 	github.com/thoas/go-funk v0.9.2 // indirect
 	github.com/turbolent/prettier v0.0.0-20220320183459-661cc755135d // indirect
