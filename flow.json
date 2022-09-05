@@ -39,6 +39,18 @@
 		"emulator-user2": {
 			"address": "f3fcd2c1a78f5eee",
 			"key": "8e2aff9f473882cfd5694948fa36e3e35e1b0140415771348dba92a07f3e24ab"
+		},
+		"emulator-user3": {
+			"address": "e03daebed8ca0615",
+			"key": "8e2aff9f473882cfd5694948fa36e3e35e1b0140415771348dba92a07f3e24ab"
+		},
+		"emulator-user4": {
+			"address": "045a1763c93006ca",
+			"key": "8e2aff9f473882cfd5694948fa36e3e35e1b0140415771348dba92a07f3e24ab"
+		},
+		"emulator-wallet": {
+			"address": "120e725050340cab",
+			"key": "8e2aff9f473882cfd5694948fa36e3e35e1b0140415771348dba92a07f3e24ab"
 		}
 	},
 	"deployments": {
@@ -48,7 +60,10 @@
 				"ShardedWallet"
 			],
 			"emulator-user1": [],
-			"emulator-user2": []
+			"emulator-user2": [],
+			"emulator-user3": [],
+			"emulator-user4": [],
+			"emulator-wallet": []
 		}
 	}
 }

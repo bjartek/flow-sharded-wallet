@@ -9,7 +9,7 @@ transaction {
     prepare(signer: AuthAccount) {
         //create a new ShardedWallet client since we want to be able to distribute from the ShardedWallet
         let userWalletClient <- ShardedWallet.createClient()
-        signer.save<@ShardedWallet.Client>(<- userWalletClient, to:/storage/ShardedWalletClient)
-        signer.link<&{ShardedWallet.ClientPublic}>( /public/ShardedWalletClient, target: /storage/ShardedWalletClient)
+        signer.save<@ShardedWallet.Client>(<- userWalletClient, to:ShardedWallet.shardedWalletClientStoragePath)
+        signer.link<&ShardedWallet.Client{ShardedWallet.ClientPublic}>( ShardedWallet.shardedWalletClientPublicPath, target: ShardedWallet.shardedWalletClientStoragePath)
     }
 }

@@ -1,4 +1,4 @@
-module github.com/versus-flow/auction-flow-contract
+module github.com/bjartek/flow-sharded-wallet
 
 go 1.19
 
